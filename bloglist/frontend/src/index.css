@@ -1,23 +1,23 @@
 .success {
-    color: green;
-    background-color: lightgreen;
-    border: 1px solid darkgreen;
-    padding: 10px;
-    border-radius: 5px;
+  color: green;
+  background-color: lightgreen;
+  border: 1px solid darkgreen;
+  padding: 10px;
+  border-radius: 5px;
 }
 
 .error {
-    color: rgb(12, 1, 1);
-    background-color: lightcoral;
-    border: 1px solid darkred;
-    padding: 10px;
-    border-radius: 5px;
+  color: rgb(12, 1, 1);
+  background-color: lightcoral;
+  border: 1px solid darkred;
+  padding: 10px;
+  border-radius: 5px;
 }
 
 .info {
-    color: blue;
-    background-color: lightblue;
-    border: 1px solid darkblue;
-    padding: 10px;
-    border-radius: 5px;
+  color: blue;
+  background-color: lightblue;
+  border: 1px solid darkblue;
+  padding: 10px;
+  border-radius: 5px;
 }

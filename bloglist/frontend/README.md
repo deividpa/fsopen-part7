@@ -1,1 +1,1 @@
-Testing React Apps - Part 5 - from the fullstackopen course By David Pérez  
+Testing React Apps - Part 5 - from the fullstackopen course By David Pérez
