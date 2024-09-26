@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import blogService from './services/blogService';
 import loginService from './services/loginService';
 import { showNotificationWithTimeout } from './redux/notificationSlice';
+import { setBlogs, addBlog, fetchBlogs, createBlog } from './redux/blogSlice';
 import Notification from './components/Notification';
 import LoginForm from './components/LoginForm';
 import BlogForm from './components/BlogForm';
@@ -10,11 +11,12 @@ import Togglable from './components/Togglable';
 import Blog from './components/Blog';
 
 const App = () => {
+  const blogs = useSelector((state) => state.blogs);
   const notification = useSelector((state) => state.notification);
   const dispatch = useDispatch();
 
+  const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [blogs, setBlogs] = useState([]);
   const blogFormRef = useRef();
 
   useEffect(() => {
@@ -23,16 +25,11 @@ const App = () => {
       const user = JSON.parse(loggedUserJSON);
       setUser(user);
       blogService.setToken(user.token);
+      dispatch(fetchBlogs()).then(() => setIsLoading(false));
+    } else {
+      setIsLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    if (user) {
-      blogService.getAllSortedByLikes().then((initialBlogs) => {
-        setBlogs(initialBlogs);
-      });
-    }
-  }, [user]);
+  }, [dispatch]);
 
   const handleLogin = async ({ username, password }) => {
     try {
@@ -60,8 +57,7 @@ const App = () => {
 
   const handleCreateBlog = async (newBlog) => {
     try {
-      const createdBlog = await blogService.create(newBlog, user.token);
-      setBlogs(blogs.concat(createdBlog));
+      const createdBlog = await dispatch(createBlog(newBlog));
       blogFormRef.current.toggleVisibility();
       dispatch(
         showNotificationWithTimeout(
@@ -72,7 +68,11 @@ const App = () => {
       );
     } catch (error) {
       dispatch(
-        showNotificationWithTimeout('Error creating blog', 'error', 5000)
+        showNotificationWithTimeout(
+          `Error creating blog ${error}`,
+          'error',
+          5000
+        )
       );
     }
   };
@@ -160,15 +160,21 @@ const App = () => {
       </Togglable>
 
       <h3>Blog List</h3>
-      {blogs.map((blog) => (
-        <Blog
-          key={blog.id}
-          blog={blog}
-          onLikeBlog={handleLikeBlog}
-          onDeleteBlog={handleDeleteBlog}
-          currentUsername={user.username}
-        />
-      ))}
+      {isLoading ? (
+        <p>Loading blogs...</p>
+      ) : blogs && blogs.length > 0 ? (
+        blogs.map((blog) => (
+          <Blog
+            key={blog.id}
+            blog={blog}
+            onLikeBlog={handleLikeBlog}
+            onDeleteBlog={handleDeleteBlog}
+            currentUsername={user.username}
+          />
+        ))
+      ) : (
+        <p>No blogs available</p>
+      )}
     </div>
   );
 };
