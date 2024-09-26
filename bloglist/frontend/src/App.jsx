@@ -1,6 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import blogService from './services/blogService';
 import loginService from './services/loginService';
+import { showNotificationWithTimeout } from './redux/notificationSlice';
 import Notification from './components/Notification';
 import LoginForm from './components/LoginForm';
 import BlogForm from './components/BlogForm';
@@ -8,9 +10,11 @@ import Togglable from './components/Togglable';
 import Blog from './components/Blog';
 
 const App = () => {
+  const notification = useSelector((state) => state.notification);
+  const dispatch = useDispatch();
+
   const [user, setUser] = useState(null);
   const [blogs, setBlogs] = useState([]);
-  const [notification, setNotification] = useState({ content: '', type: '' }); // type: info, success, error
   const blogFormRef = useRef();
 
   useEffect(() => {
@@ -30,13 +34,6 @@ const App = () => {
     }
   }, [user]);
 
-  const handleNotification = (content, type = 'info') => {
-    setNotification({ content, type });
-    setTimeout(() => {
-      setNotification({ content: '', type: '' });
-    }, 5000);
-  };
-
   const handleLogin = async ({ username, password }) => {
     try {
       const loggedUser = await loginService.login({ username, password });
@@ -46,9 +43,11 @@ const App = () => {
       );
       blogService.setToken(loggedUser.token);
       setUser(loggedUser);
-      handleNotification('Login successful', 'success');
+      dispatch(
+        showNotificationWithTimeout('Login successful', 'success', 5000)
+      );
     } catch (error) {
-      handleNotification('Wrong credentials', 'error');
+      dispatch(showNotificationWithTimeout('Wrong credentials', 'error', 5000));
     }
   };
 
@@ -56,7 +55,7 @@ const App = () => {
     setUser(null);
     setBlogs([]);
     window.localStorage.removeItem('loggedBlogAppUser');
-    handleNotification('Logged out', 'info');
+    dispatch(showNotificationWithTimeout('Logged out', 'info', 5000));
   };
 
   const handleCreateBlog = async (newBlog) => {
@@ -64,12 +63,17 @@ const App = () => {
       const createdBlog = await blogService.create(newBlog, user.token);
       setBlogs(blogs.concat(createdBlog));
       blogFormRef.current.toggleVisibility();
-      handleNotification(
-        `Blog "${createdBlog.title}" by ${createdBlog.author} added successfully`,
-        'success'
+      dispatch(
+        showNotificationWithTimeout(
+          `Blog "${createdBlog.title}" by ${createdBlog.author} added successfully`,
+          'success',
+          5000
+        )
       );
     } catch (error) {
-      handleNotification('Error creating blog', 'error');
+      dispatch(
+        showNotificationWithTimeout('Error creating blog', 'error', 5000)
+      );
     }
   };
 
@@ -91,12 +95,15 @@ const App = () => {
             .sort((a, b) => b.likes - a.likes) // sort by likes in descending order
       );
 
-      handleNotification(
-        `Blog "${returnedBlog.title}" liked successfully`,
-        'success'
+      dispatch(
+        showNotificationWithTimeout(
+          `Blog "${returnedBlog.title}" liked successfully`,
+          'success',
+          5000
+        )
       );
     } catch (error) {
-      handleNotification('Error liking blog', 'error');
+      dispatch(showNotificationWithTimeout('Error liking blog', 'error', 5000));
     }
   };
 
@@ -114,12 +121,17 @@ const App = () => {
             .sort((a, b) => b.likes - a.likes)
         );
 
-        handleNotification(
-          `Blog "${blogToDelete.title}" deleted successfully`,
-          'success'
+        dispatch(
+          showNotificationWithTimeout(
+            `Blog "${blogToDelete.title}" deleted successfully`,
+            'success',
+            5000
+          )
         );
       } catch (error) {
-        handleNotification('Error deleting blog', 'error');
+        dispatch(
+          showNotificationWithTimeout('Error deleting blog', 'error', 5000)
+        );
       }
     }
   };
