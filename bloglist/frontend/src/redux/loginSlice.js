@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import loginService from '../services/loginService';
 import blogService from '../services/blogService';
+import { fetchBlogs } from './blogSlice';
 
 const loginSlice = createSlice({
   name: 'login',
@@ -28,6 +29,7 @@ export const loginUser = ({ username, password }) => {
       );
       blogService.setToken(loggedUser.token);
       dispatch(setUserLogin(loggedUser));
+      await dispatch(fetchBlogs());
       return { success: true };
     } catch (error) {
       return { success: false, message: 'Wrong credentials' };

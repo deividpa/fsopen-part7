@@ -45,6 +45,21 @@ usersRouter.get('/', async (request, response) => {
   response.json(users);
 });
 
+// Endpoint to get the information of a single user by their ID
+usersRouter.get('/:id', async (request, response) => {
+  const user = await User.findById(request.params.id).populate('blogs', {
+    url: 1,
+    title: 1,
+    author: 1,
+  });
+
+  if (user) {
+    response.json(user);
+  } else {
+    response.status(404).json({ error: 'User not found' });
+  }
+});
+
 usersRouter.get('/current', middleware.userExtractor, (request, response) => {
   if (request.user) {
     response.json({ userId: request.user._id });

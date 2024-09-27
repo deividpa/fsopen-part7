@@ -16,6 +16,7 @@ import BlogForm from './components/BlogForm';
 import Togglable from './components/Togglable';
 import Blog from './components/Blog';
 import UserList from './components/UsersList';
+import UserView from './components/UserView';
 
 const App = () => {
   const blogs = useSelector((state) => state.blogs);
@@ -27,15 +28,25 @@ const App = () => {
   const blogFormRef = useRef();
 
   useEffect(() => {
-    const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser');
-    if (loggedUserJSON) {
-      const loggedUser = JSON.parse(loggedUserJSON);
-      dispatch(setUserLogin(loggedUser));
-      blogService.setToken(loggedUser.token);
-      dispatch(fetchBlogs()).then(() => setIsLoading(false));
-    } else {
-      setIsLoading(false);
-    }
+    const fetchData = async () => {
+      const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser');
+      if (loggedUserJSON) {
+        const loggedUser = JSON.parse(loggedUserJSON);
+        dispatch(setUserLogin(loggedUser));
+        blogService.setToken(loggedUser.token);
+        try {
+          await dispatch(fetchBlogs());
+        } catch (error) {
+          console.error('Error fetching blogs:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, [dispatch]);
 
   const handleLogin = async ({ username, password }) => {
@@ -238,6 +249,7 @@ const App = () => {
             }
           />
           <Route path="/users" element={<UserList />} />
+          <Route path="/users/:id" element={<UserView />} />
         </Routes>
       </div>
     </Router>

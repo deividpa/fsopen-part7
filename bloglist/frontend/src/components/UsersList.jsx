@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { fetchUsers } from '../redux/usersSlice';
 
 const UsersList = () => {
@@ -9,6 +10,10 @@ const UsersList = () => {
   useEffect(() => {
     dispatch(fetchUsers());
   }, [dispatch]);
+
+  if (users.length === 0) {
+    return <p>Loading users...</p>;
+  }
 
   return (
     <div>
@@ -23,7 +28,9 @@ const UsersList = () => {
         <tbody>
           {users.map((user) => (
             <tr key={user.id}>
-              <td>{user.name}</td>
+              <td>
+                <Link to={`/users/${user.id}`}>{user.name}</Link>
+              </td>
               <td>{user.blogs.length}</td>
             </tr>
           ))}
