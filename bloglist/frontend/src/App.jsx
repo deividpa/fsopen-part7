@@ -1,15 +1,14 @@
 import { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import blogService from './services/blogService';
-import loginService from './services/loginService';
 import { showNotificationWithTimeout } from './redux/notificationSlice';
 import {
-  setBlogs,
   fetchBlogs,
   createBlog,
   updateBlogLikes,
   removeBlog,
 } from './redux/blogSlice';
+import { setUser, loginUser } from './redux/userSlice';
 import Notification from './components/Notification';
 import LoginForm from './components/LoginForm';
 import BlogForm from './components/BlogForm';
@@ -18,18 +17,18 @@ import Blog from './components/Blog';
 
 const App = () => {
   const blogs = useSelector((state) => state.blogs);
+  const user = useSelector((state) => state.user);
   const notification = useSelector((state) => state.notification);
   const dispatch = useDispatch();
 
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState(null);
   const blogFormRef = useRef();
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser');
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON);
-      setUser(user);
+      dispatch(setUser(user));
       blogService.setToken(user.token);
       dispatch(fetchBlogs()).then(() => setIsLoading(false));
     } else {
@@ -38,26 +37,19 @@ const App = () => {
   }, [dispatch]);
 
   const handleLogin = async ({ username, password }) => {
-    try {
-      const loggedUser = await loginService.login({ username, password });
-      window.localStorage.setItem(
-        'loggedBlogAppUser',
-        JSON.stringify(loggedUser)
-      );
-      blogService.setToken(loggedUser.token);
-      setUser(loggedUser);
+    const result = await dispatch(loginUser({ username, password }));
+
+    if (result.success) {
       dispatch(
         showNotificationWithTimeout('Login successful', 'success', 5000)
       );
-    } catch (error) {
-      dispatch(showNotificationWithTimeout('Wrong credentials', 'error', 5000));
+    } else {
+      dispatch(showNotificationWithTimeout(result.message, 'error', 5000));
     }
   };
 
   const handleLogout = () => {
-    setUser(null);
-    setBlogs([]);
-    window.localStorage.removeItem('loggedBlogAppUser');
+    dispatch(logoutUser());
     dispatch(showNotificationWithTimeout('Logged out', 'info', 5000));
   };
 
