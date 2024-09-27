@@ -15,6 +15,7 @@ import LoginForm from './components/LoginForm';
 import BlogForm from './components/BlogForm';
 import Togglable from './components/Togglable';
 import Blog from './components/Blog';
+import BlogView from './components/BlogView';
 import UserList from './components/UsersList';
 import UserView from './components/UserView';
 
@@ -205,7 +206,6 @@ const App = () => {
           <Link to="/">Blogs</Link>
           {userSession && <Link to="/users">Users</Link>}
         </nav>
-
         <Routes>
           <Route
             path="/"
@@ -250,6 +250,7 @@ const App = () => {
           />
           <Route path="/users" element={<UserList />} />
           <Route path="/users/:id" element={<UserView />} />
+          <Route path="/blogs/:id" element={<BlogView />} />
         </Routes>
       </div>
     </Router>
