@@ -3,7 +3,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import blogService from './services/blogService';
 import loginService from './services/loginService';
 import { showNotificationWithTimeout } from './redux/notificationSlice';
-import { setBlogs, addBlog, fetchBlogs, createBlog } from './redux/blogSlice';
+import {
+  setBlogs,
+  fetchBlogs,
+  createBlog,
+  updateBlogLikes,
+  removeBlog,
+} from './redux/blogSlice';
 import Notification from './components/Notification';
 import LoginForm from './components/LoginForm';
 import BlogForm from './components/BlogForm';
@@ -79,33 +85,57 @@ const App = () => {
 
   const handleLikeBlog = async (id) => {
     const blogToLike = blogs.find((blog) => blog.id === id);
+    const updatedBlog = {
+      ...blogToLike,
+      likes: blogToLike.likes + 1,
+      user: blogToLike.user,
+    };
 
     try {
-      const updatedBlog = {
-        ...blogToLike,
-        likes: blogToLike.likes + 1,
-        user: blogToLike.user,
-      };
-      const returnedBlog = await blogService.update(id, updatedBlog);
-
-      setBlogs(
-        (prevBlogs) =>
-          prevBlogs
-            .map((blog) => (blog.id !== id ? blog : returnedBlog))
-            .sort((a, b) => b.likes - a.likes) // sort by likes in descending order
-      );
-
+      await dispatch(updateBlogLikes(id, updatedBlog));
       dispatch(
         showNotificationWithTimeout(
-          `Blog "${returnedBlog.title}" liked successfully`,
+          `Blog "${blogToLike.title}" liked successfully`,
           'success',
           5000
         )
       );
     } catch (error) {
-      dispatch(showNotificationWithTimeout('Error liking blog', 'error', 5000));
+      dispatch(
+        showNotificationWithTimeout(`Error liking blog ${error}`, 'error', 5000)
+      );
     }
   };
+
+  // const handleLikeBlog = async (id) => {
+  //   const blogToLike = blogs.find((blog) => blog.id === id);
+
+  //   try {
+  //     const updatedBlog = {
+  //       ...blogToLike,
+  //       likes: blogToLike.likes + 1,
+  //       user: blogToLike.user,
+  //     };
+  //     const returnedBlog = await blogService.update(id, updatedBlog);
+
+  //     setBlogs(
+  //       (prevBlogs) =>
+  //         prevBlogs
+  //           .map((blog) => (blog.id !== id ? blog : returnedBlog))
+  //           .sort((a, b) => b.likes - a.likes) // sort by likes in descending order
+  //     );
+
+  //     dispatch(
+  //       showNotificationWithTimeout(
+  //         `Blog "${returnedBlog.title}" liked successfully`,
+  //         'success',
+  //         5000
+  //       )
+  //     );
+  //   } catch (error) {
+  //     dispatch(showNotificationWithTimeout('Error liking blog', 'error', 5000));
+  //   }
+  // };
 
   const handleDeleteBlog = async (id) => {
     const blogToDelete = blogs.find((blog) => blog.id === id);
@@ -113,14 +143,7 @@ const App = () => {
       window.confirm(`Are you sure you want to delete "${blogToDelete.title}"?`)
     ) {
       try {
-        await blogService.deleteBlog(id, user.token);
-
-        setBlogs((prevBlogs) =>
-          prevBlogs
-            .filter((blog) => blog.id !== id)
-            .sort((a, b) => b.likes - a.likes)
-        );
-
+        await dispatch(removeBlog(id));
         dispatch(
           showNotificationWithTimeout(
             `Blog "${blogToDelete.title}" deleted successfully`,
@@ -130,11 +153,44 @@ const App = () => {
         );
       } catch (error) {
         dispatch(
-          showNotificationWithTimeout('Error deleting blog', 'error', 5000)
+          showNotificationWithTimeout(
+            `Error deleting blog ${error}`,
+            'error',
+            5000
+          )
         );
       }
     }
   };
+
+  // const handleDeleteBlog = async (id) => {
+  //   const blogToDelete = blogs.find((blog) => blog.id === id);
+  //   if (
+  //     window.confirm(`Are you sure you want to delete "${blogToDelete.title}"?`)
+  //   ) {
+  //     try {
+  //       await blogService.deleteBlog(id, user.token);
+
+  //       setBlogs((prevBlogs) =>
+  //         prevBlogs
+  //           .filter((blog) => blog.id !== id)
+  //           .sort((a, b) => b.likes - a.likes)
+  //       );
+
+  //       dispatch(
+  //         showNotificationWithTimeout(
+  //           `Blog "${blogToDelete.title}" deleted successfully`,
+  //           'success',
+  //           5000
+  //         )
+  //       );
+  //     } catch (error) {
+  //       dispatch(
+  //         showNotificationWithTimeout('Error deleting blog', 'error', 5000)
+  //       );
+  //     }
+  //   }
+  // };
 
   if (!user) {
     return (
