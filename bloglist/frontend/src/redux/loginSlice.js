@@ -2,20 +2,20 @@ import { createSlice } from '@reduxjs/toolkit';
 import loginService from '../services/loginService';
 import blogService from '../services/blogService';
 
-const userSlice = createSlice({
-  name: 'user',
+const loginSlice = createSlice({
+  name: 'login',
   initialState: null,
   reducers: {
-    setUser(state, action) {
+    setUserLogin(state, action) {
       return action.payload;
     },
-    clearUser(state, action) {
+    clearUserLogin(state, action) {
       return null;
     },
   },
 });
 
-export const { setUser, clearUser } = userSlice.actions;
+export const { setUserLogin, clearUserLogin } = loginSlice.actions;
 
 // Function to handle the login
 export const loginUser = ({ username, password }) => {
@@ -27,7 +27,7 @@ export const loginUser = ({ username, password }) => {
         JSON.stringify(loggedUser)
       );
       blogService.setToken(loggedUser.token);
-      dispatch(setUser(loggedUser));
+      dispatch(setUserLogin(loggedUser));
       return { success: true };
     } catch (error) {
       return { success: false, message: 'Wrong credentials' };
@@ -40,8 +40,8 @@ export const logoutUser = () => {
   return (dispatch) => {
     window.localStorage.removeItem('loggedBlogAppUser');
     blogService.setToken(null);
-    dispatch(clearUser());
+    dispatch(clearUserLogin());
   };
 };
 
-export default userSlice.reducer;
+export default loginSlice.reducer;

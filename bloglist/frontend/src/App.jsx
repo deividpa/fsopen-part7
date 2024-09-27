@@ -1,3 +1,4 @@
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import blogService from './services/blogService';
@@ -8,16 +9,17 @@ import {
   updateBlogLikes,
   removeBlog,
 } from './redux/blogSlice';
-import { setUser, loginUser } from './redux/userSlice';
+import { setUserLogin, loginUser, logoutUser } from './redux/loginSlice';
 import Notification from './components/Notification';
 import LoginForm from './components/LoginForm';
 import BlogForm from './components/BlogForm';
 import Togglable from './components/Togglable';
 import Blog from './components/Blog';
+import UserList from './components/UsersList';
 
 const App = () => {
   const blogs = useSelector((state) => state.blogs);
-  const user = useSelector((state) => state.user);
+  const userSession = useSelector((state) => state.login);
   const notification = useSelector((state) => state.notification);
   const dispatch = useDispatch();
 
@@ -27,9 +29,9 @@ const App = () => {
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogAppUser');
     if (loggedUserJSON) {
-      const user = JSON.parse(loggedUserJSON);
-      dispatch(setUser(user));
-      blogService.setToken(user.token);
+      const loggedUser = JSON.parse(loggedUserJSON);
+      dispatch(setUserLogin(loggedUser));
+      blogService.setToken(loggedUser.token);
       dispatch(fetchBlogs()).then(() => setIsLoading(false));
     } else {
       setIsLoading(false);
@@ -184,46 +186,61 @@ const App = () => {
   //   }
   // };
 
-  if (!user) {
-    return (
+  return (
+    <Router>
       <div>
         <Notification type={notification.type} content={notification.content} />
-        <Togglable buttonLabel="show login">
-          <LoginForm onLogin={handleLogin} />
-        </Togglable>
-      </div>
-    );
-  }
+        <nav>
+          <Link to="/">Blogs</Link>
+          {userSession && <Link to="/users">Users</Link>}
+        </nav>
 
-  return (
-    <div>
-      <h2>Blogs</h2>
-      <p>
-        {user.name} logged in <button onClick={handleLogout}>Logout</button>
-      </p>
-      <Notification type={notification.type} content={notification.content} />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <h2>Blogs</h2>
+                {!userSession ? (
+                  <Togglable buttonLabel="show login">
+                    <LoginForm onLogin={handleLogin} />
+                  </Togglable>
+                ) : (
+                  <div>
+                    <p>
+                      {userSession.name} logged in{' '}
+                      <button onClick={handleLogout}>Logout</button>
+                    </p>
 
-      <Togglable buttonLabel="Create new blog" ref={blogFormRef}>
-        <BlogForm createBlog={handleCreateBlog} />
-      </Togglable>
+                    <Togglable buttonLabel="Create new blog" ref={blogFormRef}>
+                      <BlogForm createBlog={handleCreateBlog} />
+                    </Togglable>
 
-      <h3>Blog List</h3>
-      {isLoading ? (
-        <p>Loading blogs...</p>
-      ) : blogs && blogs.length > 0 ? (
-        blogs.map((blog) => (
-          <Blog
-            key={blog.id}
-            blog={blog}
-            onLikeBlog={handleLikeBlog}
-            onDeleteBlog={handleDeleteBlog}
-            currentUsername={user.username}
+                    <h3>Blog List</h3>
+                    {isLoading ? (
+                      <p>Loading blogs...</p>
+                    ) : blogs.length > 0 ? (
+                      blogs.map((blog) => (
+                        <Blog
+                          key={blog.id}
+                          blog={blog}
+                          onLikeBlog={handleLikeBlog}
+                          onDeleteBlog={handleDeleteBlog}
+                          currentUsername={userSession.username}
+                        />
+                      ))
+                    ) : (
+                      <p>No blogs available</p>
+                    )}
+                  </div>
+                )}
+              </>
+            }
           />
-        ))
-      ) : (
-        <p>No blogs available</p>
-      )}
-    </div>
+          <Route path="/users" element={<UserList />} />
+        </Routes>
+      </div>
+    </Router>
   );
 };
 
