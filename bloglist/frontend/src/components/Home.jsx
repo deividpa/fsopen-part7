@@ -11,6 +11,50 @@ import { showNotificationWithTimeout } from '../redux/notificationSlice';
 import Togglable from './Togglable';
 import BlogForm from './BlogForm';
 import Blog from './Blog';
+import styled from 'styled-components';
+
+const Container = styled.div`
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
+`;
+
+const Title = styled.h2`
+  font-size: 2.5rem;
+  color: #333;
+  text-align: center;
+  margin-bottom: 20px;
+`;
+
+const BlogListTitle = styled.h3`
+  font-size: 1.8rem;
+  color: #555;
+  margin-bottom: 10px;
+`;
+
+const BlogContainer = styled.div`
+  margin-top: 30px;
+`;
+
+const LoadingMessage = styled.p`
+  font-size: 1.2rem;
+  color: #666;
+  text-align: center;
+`;
+
+const NoBlogsMessage = styled.p`
+  font-size: 1.2rem;
+  color: #666;
+  text-align: center;
+  margin-top: 20px;
+`;
+
+const LoginPrompt = styled.p`
+  font-size: 1.4rem;
+  color: #d9534f;
+  text-align: center;
+  margin-top: 20px;
+`;
 
 const Home = ({ userSession }) => {
   const blogs = useSelector((state) => state.blogs);
@@ -112,35 +156,36 @@ const Home = ({ userSession }) => {
   };
 
   return (
-    <div>
-      <h2>Blogs</h2>
+    <Container>
+      <Title>Blogs</Title>
       {userSession ? (
         <div>
           <Togglable buttonLabel="Create new blog" ref={blogFormRef}>
             <BlogForm createBlog={handleCreateBlog} />
           </Togglable>
-
-          <h3>Blog List</h3>
-          {isLoading ? (
-            <p>Loading blogs...</p>
-          ) : blogs.length > 0 ? (
-            blogs.map((blog) => (
-              <Blog
-                key={blog.id}
-                blog={blog}
-                onLikeBlog={handleLikeBlog}
-                onDeleteBlog={handleDeleteBlog}
-                currentUsername={userSession.username}
-              />
-            ))
-          ) : (
-            <p>No blogs available</p>
-          )}
+          <BlogListTitle>Blog List</BlogListTitle>
+          <BlogContainer>
+            {isLoading ? (
+              <LoadingMessage>Loading blogs...</LoadingMessage>
+            ) : blogs.length > 0 ? (
+              blogs.map((blog) => (
+                <Blog
+                  key={blog.id}
+                  blog={blog}
+                  onLikeBlog={handleLikeBlog}
+                  onDeleteBlog={handleDeleteBlog}
+                  currentUsername={userSession.username}
+                />
+              ))
+            ) : (
+              <NoBlogsMessage>No blogs available</NoBlogsMessage>
+            )}
+          </BlogContainer>
         </div>
       ) : (
-        <p>Please log in to see blogs.</p>
+        <LoginPrompt>Please log in to see blogs.</LoginPrompt>
       )}
-    </div>
+    </Container>
   );
 };
 

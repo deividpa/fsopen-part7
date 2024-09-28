@@ -54,7 +54,6 @@ export const updateBlogLikes = (id, updatedBlog) => {
 // Function to delete a blog
 export const removeBlog = (id) => {
   return async (dispatch) => {
-    console.log('removing blog with id', id);
     await blogService.deleteBlog(id);
     dispatch(deleteBlog(id));
   };
