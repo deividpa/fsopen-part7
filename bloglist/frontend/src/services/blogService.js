@@ -49,6 +49,11 @@ const deleteBlog = async (id) => {
   return response.data;
 };
 
+const addComment = async (id, comment) => {
+  const response = await axios.post(`${baseUrl}/${id}/comments`, { comment });
+  return response.data;
+};
+
 export default {
   getAll,
   getAllSortedByLikes,
@@ -56,5 +61,6 @@ export default {
   create,
   update,
   deleteBlog,
+  addComment,
   setToken,
 };

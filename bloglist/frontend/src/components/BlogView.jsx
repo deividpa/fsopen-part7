@@ -4,6 +4,7 @@ import blogService from '../services/blogService';
 
 const BlogView = () => {
   const [blog, setBlog] = useState(null);
+  const [newComment, setNewComment] = useState('');
   const { id } = useParams();
 
   useEffect(() => {
@@ -18,6 +19,16 @@ const BlogView = () => {
 
     fetchBlog();
   }, [id]);
+
+  const handleAddComment = async () => {
+    try {
+      const updatedBlog = await blogService.addComment(id, newComment);
+      setBlog(updatedBlog);
+      setNewComment('');
+    } catch (error) {
+      console.error('Error adding comment:', error);
+    }
+  };
 
   if (!blog) {
     return <div>Loading...</div>;
@@ -35,6 +46,23 @@ const BlogView = () => {
       <p>
         <strong>Likes:</strong> {blog.likes}
       </p>
+      <h3>Comments</h3>
+      {blog.comments.length > 0 ? (
+        <ul>
+          {blog.comments.map((comment, index) => (
+            <li key={index}>{comment}</li>
+          ))}
+        </ul>
+      ) : (
+        <p>No comments yet.</p>
+      )}
+      <input
+        type="text"
+        value={newComment}
+        onChange={(e) => setNewComment(e.target.value)}
+        placeholder="Add a comment"
+      />
+      <button onClick={handleAddComment}>Add Comment</button>
     </div>
   );
 };

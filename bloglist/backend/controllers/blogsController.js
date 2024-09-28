@@ -54,6 +54,30 @@ blogsRouter.post('/', middleware.userExtractor, async (request, response) => {
   response.status(201).json(savedBlog);
 });
 
+// Endpoint for adding comments to a blog
+blogsRouter.post('/:id/comments', async (req, res) => {
+  const { id } = req.params;
+  const { comment } = req.body;
+
+  if (!comment) {
+    return res.status(400).json({ error: 'Comment content missing' });
+  }
+
+  try {
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({ error: 'Blog not found' });
+    }
+
+    blog.comments = blog.comments.concat(comment);
+    const updatedBlog = await blog.save();
+
+    res.status(201).json(updatedBlog);
+  } catch (error) {
+    res.status(500).json({ error: 'Something went wrong' });
+  }
+});
+
 blogsRouter.delete(
   '/:id',
   middleware.userExtractor,
